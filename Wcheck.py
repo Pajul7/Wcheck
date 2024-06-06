@@ -5,7 +5,7 @@ import time
 from wifi import Cell, Scheme
 
 # Uncomment this to run it from outside of the script's directory.
-os.chdir("/opt/Wcheck")
+#os.chdir("/opt/Wcheck")
 
 
 def init_MAC_DB():
