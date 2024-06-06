@@ -55,3 +55,6 @@ You can log the results in a json file, in the logs directory, included with the
 This one is pretty self-explanatory.
 Will print out SSID, MAC address, signal, quality.
 You can log the results in a json file, in the logs directory, included with the script.
+
+
+/!\ This is a small newbie script, dont judge it too harshly.
