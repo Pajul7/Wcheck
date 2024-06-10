@@ -120,7 +120,7 @@ def log_this_csv(collection , subdir = "" ) :
 		writer = csv.writer(f)
 		writer.writerow(collection[0].keys())
 
-		for item in my_dict.items():
+		for item in collection:
 	        	writer.writerow(item)
 	print("Log saved at location :\n"+filepath+"\n")
 
