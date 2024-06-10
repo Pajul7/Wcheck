@@ -117,10 +117,11 @@ def log_this_csv(collection , subdir = "" ) :
 	
 	filepath = "./logs/"+subdir+name+"-"+time.strftime("%Y-%m-%d_%H-%M-%S" , time.localtime())+".csv" 
 	with open( filepath , "w+" ) as f:
-		writer = csv.writer(f)
-		writer.writerow(collection[0].keys())
+		writer = csv.DictWriter( f , collection[0].keys() )
 
+		writer.writeheader()
 		for item in collection:
+			print(item)
 	        	writer.writerow(item)
 	print("Log saved at location :\n"+filepath+"\n")
 
