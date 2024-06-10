@@ -66,14 +66,15 @@ def stop_hotspot(con_name="WCHECK-CONNECTION"):
 
 def list_available_ap(MACDB , interface):
 	print("\n")
-	networks = list(Cell.all(interface))
-	print(networks)
+	networks = [{"ssid":n.ssid,"address":n.address,"signal":n.signal,"quality":n.quality, "frequency":n.frequency ,"channel":n.channel, "vendor":MAC_to_vendor(n.address.upper() , MACDB )} for n in list(Cell.all(interface))]
 	print("Wireless Networks :\n")
-	print("{:16}	{:16}	{:16}	{:16}	{:16}".format("SSID","MAC","signal","quality","vendor"))
+	print("{:16}	{:16}	{:10}	{:10}	{:10}	{:10}	{:10}".format("SSID","MAC","signal","quality","frequency","channel","vendor"))
 	for n in networks :
-		if n.ssid != None :
-			print("{:16}	{:16}	{:16}	{:16}	{:16}".format( n.ssid , n.address , n.signal , n.quality , MAC_to_vendor(n.address.upper() , MACDB )  ))
 
+		if n["ssid"] != None :
+			#print("{:16}	{:16}	{:16}	{:16}	{:16}	{:16}".format( n.ssid , n.address , n.signal , n.quality, n.channel , MAC_to_vendor(n.address.upper() , MACDB )  ))
+
+			print("{:16}	{:16}	{:10}	{:10}	{:10}	{:10}	{:10}".format( n["ssid"] , n["address"] , n["signal"] , n["quality"], n["frequency"], n["channel"] , n["vendor"]))
 	print("\n")
 	return networks
 
@@ -120,9 +121,8 @@ def log_this_csv(collection , subdir = "" ) :
 		writer = csv.DictWriter( f , collection[0].keys() )
 
 		writer.writeheader()
-		for item in collection:
-			print(item)
-	        	writer.writerow(item)
+		for item in collection:	
+			writer.writerow(item)
 	print("Log saved at location :\n"+filepath+"\n")
 
 def main():
@@ -173,6 +173,6 @@ def main():
 					networks = list_available_ap(MACDB , interface)
 					user_choice = input("\nAre we logging this ? (y/N)\n")
 					if user_choice == "y" or user_choice == "Y" :
-						log_this_csv( [ {"ssid":n.ssid, "address":n.address , "signal":n.signal , "quality" : n.quality , "vendor" : MAC_to_vendor(n.address.upper() , MACDB ) } for n in networks], subdir="av_APs/" )
+						log_this_csv( networks , subdir="av_APs/" )
 if __name__ == "__main__" :
 	main()
