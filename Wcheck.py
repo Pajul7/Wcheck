@@ -94,7 +94,7 @@ def open_menu(options:list , title="Menu" ):
 			print("\nIncorrect option given. Try again.\n")
 	return choice
 
-def log_this(collection , subdir = "") :
+def log_this_json(collection , subdir = "") :
 	name = input("\n Saisissez un nom/lieu :\n")
 
 	if not os.path.isdir("./logs") :
@@ -102,10 +102,20 @@ def log_this(collection , subdir = "") :
 	if not os.path.isdir("./logs/"+subdir) :
 		os.mkdir("./logs/"+subdir)
 
+def log_this_csv(collection , subdir = "" ) :
+	name = input("\n Saisissez un nom/lieu :\n")
 
-	filepath = "./logs/"+subdir+name+"-"+time.strftime("%Y-%m-%d_%H-%M-%S" , time.localtime())+".json" 
+	if not os.path.isdir("./logs") :
+		os.mkdir("./logs")
+	if not os.path.isdir("./logs/"+subdir) :
+		os.mkdir("./logs/"+subdir)
+	
+	filepath = "./logs/"+subdir+name+"-"+time.strftime("%Y-%m-%d_%H-%M-%S" , time.localtime())+".csv" 
 	with open( filepath , "w+" ) as f:
-		json.dump(collection, f)
+		writer = csv.writer(f)
+		writer.writerow(collection.keys())
+		for key, value in my_dict.items():
+	        	writer.writerow([key, value])
 	print("Log saved at location :\n"+filepath+"\n")
 
 def main():
@@ -148,7 +158,7 @@ def main():
 
 						user_choice = input("\nAre we logging this ? (y/N)\n")
 						if user_choice == "y" or user_choice == "Y" :
-							log_this(clients,subdir="con_dev/")
+							log_this_csv(clients,subdir="con_dev/")
 						print("\n")
 
 				case 4 :
@@ -156,6 +166,6 @@ def main():
 					networks = list_available_ap(MACDB , interface)
 					user_choice = input("\nAre we logging this ? (y/N)\n")
 					if user_choice == "y" or user_choice == "Y" :
-						log_this( [ {"ssid":n.ssid, "address":n.address , "signal":n.signal , "quality" : n.quality , "vendor" : MAC_to_vendor(n.address.upper() , MACDB ) } for n in networks], subdir="av_APs/" )
+						log_this_csv( [ {"ssid":n.ssid, "address":n.address , "signal":n.signal , "quality" : n.quality , "vendor" : MAC_to_vendor(n.address.upper() , MACDB ) } for n in networks], subdir="av_APs/" )
 if __name__ == "__main__" :
 	main()
