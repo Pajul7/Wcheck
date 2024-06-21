@@ -87,7 +87,8 @@ def main():
 
 					display_aps( r )
 
-					save_results( r ) 
+					if input("\nAre we saving this ? (Y/n)\n").upper() in ["Y","YES",""] :
+						save_results( r ) 
 				
 				case 6 :
 					sure = input("Are you sure you want to delete ALL of the scans ? (Y/n)")
