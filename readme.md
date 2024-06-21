@@ -5,7 +5,7 @@
 
 Wcheck runs on linux with python 3.
 To run, it needs the following libraries : 
->os , time , json , wifi , scapy
+> os , time , json , wifi , scapy
 
 And needs to have Network Manager (nmcli command) installed.
 
@@ -59,5 +59,28 @@ Will print out SSID, MAC address, signal, quality.
 You can log the results in a json file, in the logs directory, included with the script.
 
 If you want to run it from outside the script directory, uncomment the line and enter the script directory's path.
+
+
+### 5 - Process Data
+
+Asks for the path of a file containing the legitimate access points.
+
+/!\ this file has to be a .csv file and have at least an "address" row containing the MAC address of the AP, and an "ssid" row containing... well the AP's SSID.
+If there is any other rows, they will be ignored.
+
+after this, it will compare the reference "legit" AP list with ALL of the precedent scan logs, and display the APs with unknown MAC address, or the ones with the wrong SSIDs.
+
+You can save this like the other ones. It will be saved under the "results/" folder in the working directory.
+
+### 6 - Delete logs 
+
+This one deletes the ./logs folder in the working directory.
+
+### 7 - Delete results
+
+Deletes the ./results folder in the working directory.
+
+
+
 
 /!\ This is a small newbie script, dont judge it too harshly.
