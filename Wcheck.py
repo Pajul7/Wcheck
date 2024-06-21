@@ -91,23 +91,29 @@ def main():
 						save_results( r ) 
 				
 				case 6 :
-					sure = input("Are you sure you want to delete ALL of the scans ? (Y/n)")
+					if os.path.isdir("./logs"):
+						sure = input("Are you sure you want to delete ALL of the scans ? (Y/n)")
 
-					if sure.upper() in ["Y","YES",""] :
-						shutil.rmtree("./logs")
-						print("Logs sucessfully deleted.")
+						if sure.upper() in ["Y","YES",""] :
+							shutil.rmtree("./logs")
+							print("Logs sucessfully deleted.")
+						else :
+							print("Deletion cancelled.")
 					else :
-						print("Deletion cancelled.")
+						print("There is currently no logs to delete.")
 
 				case 7 :
 					
-					sure = input("Are you sure you want to delete ALL of the results ? (y/N)")
+					if os.path.isdir("./results"):	
+						sure = input("Are you sure you want to delete ALL of the results ? (y/N)")
 
-					if sure.upper() in ["Y","YES"] :
-						shutil.rmtree("./results")
-						print("Results sucessfully deleted.")
+						if sure.upper() in ["Y","YES"] :
+							shutil.rmtree("./results")
+							print("Results sucessfully deleted.")
+						else :
+							print("Deletion cancelled.")
 					else :
-						print("Deletion cancelled.")
+						print("There is currently no results to delete.")
 
 if __name__ == "__main__" :
 	main()
