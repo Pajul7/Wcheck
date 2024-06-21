@@ -1,0 +1,3 @@
+#ignore CSV/logs files
+.csv
+logs/

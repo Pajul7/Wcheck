@@ -1,129 +1,24 @@
-from scapy.all import srp , Ether , ARP , arping , IFACES , get_if_addr
-import json
-import csv
 import os
-import time
+import shutil
 from wifi import Cell, Scheme
 
+from Misc import *
+from Eviltwin import *
+from LegitimateComparison import *
+
 # Uncomment this to run it from outside of the script's directory.
-#os.chdir("/opt/Wcheck")
+os.chdir("/home/pajul/Documents/work/Wcheck/")
 
-
-def init_MAC_DB():
-	res = {}
-	with open("fMAC_DB.json") as f :
-		res = json.load(f)
-	return res
-
-def MAC_to_vendor(MAC_prefix:str , MAC_DB:dict) :
-	#print("Looking for" , MAC_prefix , " among " , len(MAC_DB), " MAC prefixes...")
-	if len(MAC_prefix) < 8 :
-		return "Unknown"
-
-	elif MAC_prefix in MAC_DB :
-		return MAC_DB[MAC_prefix]["vendorName"]
-	else :
-		if MAC_prefix[-2] == ':' :
-			return MAC_to_vendor(MAC_prefix[:-2] , MAC_DB)
-		else :
-			return MAC_to_vendor(MAC_prefix[:-1] , MAC_DB)
-
-def get_netaddr(target , subnet):
-	splittarget = target.split(".")
-	ip = splittarget[0] + "." + splittarget[1] + "." + splittarget[2] + "." + "0/"+subnet
-	return ip
-
-def print_connected_devices(net_ip:str , MACDB, interface):
-	print("clearing ARP cache...")
-	os.system("ip neigh flush all")
-	#print("arping start")
-	#arping(net_ip)
-	#print("arping end")
-
-	target = get_netaddr(net_ip,"24")
-	ans, unans = srp(Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst=target) , timeout = 3 , iface = interface , inter = 0.05)
-
-	print("\n")
-
-	clients = []
-
-	for sent , received in ans :
-		clients.append({ "ip" : received.psrc , "mac" : received.hwsrc})
-
-	print("Connected devices :")
-	for c in clients :
-		print ("{:16}	{:16}	{}".format(  c["ip"], c["mac"] , MAC_to_vendor( c["mac"].upper() , MACDB)    ))
-	return clients
-
-def start_hotspot(SSID:str , interface , con_name="WCHECK-CONNECTION"):
-	os.system("nmcli con add type wifi ifname "+interface+" con-name "+ con_name +" ssid \""+SSID+"\"")
-	os.system("nmcli con modify " + con_name + " 802-11-wireless.mode ap 802-11-wireless.band bg ipv4.method shared")
-	os.system("nmcli con up "+con_name)
-
-def stop_hotspot(con_name="WCHECK-CONNECTION"):
-	os.system("nmcli con down " + con_name)
-	os.system("nmcli con delete " + con_name)
 
 def list_available_ap(MACDB , interface):
 	print("\n")
 	networks = [{"ssid":n.ssid,"address":n.address,"signal":n.signal,"quality":n.quality, "frequency":n.frequency ,"channel":n.channel, "vendor":MAC_to_vendor(n.address.upper() , MACDB )} for n in list(Cell.all(interface))]
-	print("Wireless Networks :\n")
-	print("{:16}	{:16}	{:10}	{:10}	{:10}	{:10}	{:10}".format("SSID","MAC","signal","quality","frequency","channel","vendor"))
-	for n in networks :
 
-		if n["ssid"] != None :
-			#print("{:16}	{:16}	{:16}	{:16}	{:16}	{:16}".format( n.ssid , n.address , n.signal , n.quality, n.channel , MAC_to_vendor(n.address.upper() , MACDB )  ))
+	print(networks)
 
-			print("{:16}	{:16}	{:10}	{:10}	{:10}	{:10}	{:10}".format( n["ssid"] , n["address"] , n["signal"] , n["quality"], n["frequency"], n["channel"] , n["vendor"]))
-	print("\n")
+	display_aps(networks)
+
 	return networks
-
-
-def open_menu(options:list , title="Menu" ):
-	print(title)
-
-	i = 0
-	while i<=len(options)-1:
-		print(i , "	" , options[i]) 
-		i+=1
-
-	choice = -1
-	while choice not in range(0,len(options)):
-		u_input = input("Select option (0-"+str(len(options) -1)+") : \n")
-		if u_input.isdigit() :
-			choice = int(u_input)
-		if choice not in range(0,len(options)):
-			print("\nIncorrect option given. Try again.\n")
-	return choice
-
-def log_this_json(collection , subdir = "") :
-	name = input("\n Saisissez un nom/lieu :\n")
-	if not os.path.isdir("./logs") :
-		os.mkdir("./logs")
-	if not os.path.isdir("./logs/"+subdir) :
-		os.mkdir("./logs/"+subdir)
-	filepath = "./logs/"+subdir+name+"-"+time.strftime("%Y-%m-%d_%H-%M-%S" , time.localtime())+".json" 
-	with open( filepath , "w+" ) as f:
-		json.dump(collection, f)
-	print("Log saved at location :\n"+filepath+"\n")
-
-
-def log_this_csv(collection , subdir = "" ) :
-	name = input("\n Saisissez un nom/lieu :\n")
-
-	if not os.path.isdir("./logs") :
-		os.mkdir("./logs")
-	if not os.path.isdir("./logs/"+subdir) :
-		os.mkdir("./logs/"+subdir)
-	
-	filepath = "./logs/"+subdir+name+"-"+time.strftime("%Y-%m-%d_%H-%M-%S" , time.localtime())+".csv" 
-	with open( filepath , "w+" ) as f:
-		writer = csv.DictWriter( f , collection[0].keys() )
-
-		writer.writeheader()
-		for item in collection:	
-			writer.writerow(item)
-	print("Log saved at location :\n"+filepath+"\n")
 
 def main():
 	MainTitle = " __    __     _               _    \n/ / /\\ \\ \\___| |__   ___  ___| | __\n\\ \\/  \\/ / __| '_ \\ / _ \\/ __| |/ /\n \\  /\\  / (__| | | |  __/ (__|   < \n  \\/  \\/ \\___|_| |_|\\___|\\___|_|\\_\\\n                           By Pajul"
@@ -135,7 +30,7 @@ def main():
 
 	Evil_Twin_up = False
 	running = True
-	main_menu = ["EXIT" , "Create Evil Twin" , "Close Evil Twin" , "See Evil Twin's connections" , "List available Wi-Fi"]
+	main_menu = ["EXIT" , "Create Evil Twin" , "Close Evil Twin" , "See Evil Twin's connections" , "List available Wi-Fi", "Process data", "Delete logs", "Delete results"]
 	while running :
 		result = open_menu(main_menu,"Main Menu")
 		if result <= len(main_menu) :
@@ -174,5 +69,45 @@ def main():
 					user_choice = input("\nAre we logging this ? (y/N)\n")
 					if user_choice == "y" or user_choice == "Y" :
 						log_this_csv( networks , subdir="av_APs/" )
+
+				case 5 :
+
+					leg_name = input("Enter known legitimate APs file path (if empty will check './legitimate.csv') :\n")
+					if leg_name == "" : leg_name = "./legitimate.csv"
+
+					if  not os.path.isfile(leg_name) :
+						print("Error : specified file does not exist.")
+						break
+
+					leg = get_legitimate(leg_name)
+
+					d = gather_scans()
+
+					r = ap_delta( d , leg )
+
+					display_aps( r )
+
+					if input("\nAre we saving this ? (Y/n)\n").upper() in ["Y","YES",""] :
+						save_results( r ) 
+				
+				case 6 :
+					sure = input("Are you sure you want to delete ALL of the scans ? (Y/n)")
+
+					if sure.upper() in ["Y","YES",""] :
+						shutil.rmtree("./logs")
+						print("Logs sucessfully deleted.")
+					else :
+						print("Deletion cancelled.")
+
+				case 7 :
+					
+					sure = input("Are you sure you want to delete ALL of the results ? (y/N)")
+
+					if sure.upper() in ["Y","YES"] :
+						shutil.rmtree("./results")
+						print("Results sucessfully deleted.")
+					else :
+						print("Deletion cancelled.")
+
 if __name__ == "__main__" :
 	main()
