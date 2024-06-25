@@ -5,7 +5,7 @@
 
 Wcheck runs on linux with python 3.
 To run, it needs the following libraries : 
-> os , time , json , wifi , scapy
+> os , time , json , csv , wifi , scapy
 
 And needs to have Network Manager (nmcli command) installed.
 
