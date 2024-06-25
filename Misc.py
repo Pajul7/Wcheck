@@ -55,22 +55,27 @@ def log_this_json(collection , subdir = "") :
 	print("Log saved at location :\n"+filepath+"\n")
 
 
-def log_this_csv(collection , subdir = "" ) :
-	name = input("\n Saisissez un nom/lieu :\n")
+def log_this_csv(collection, subdir=""):
+    name = input("\n Saisissez un nom/lieu :\n")
 
-	if not os.path.isdir("./logs") :
-		os.mkdir("./logs")
-	if not os.path.isdir("./logs/"+subdir) :
-		os.mkdir("./logs/"+subdir)
-	
-	filepath = "./logs/"+subdir+name+"-"+time.strftime("%Y-%m-%d_%H-%M-%S" , time.localtime())+".csv" 
-	with open( filepath , "w+" ) as f:
-		writer = csv.DictWriter( f , collection[0].keys() )
+    if not os.path.isdir("./logs"):
+        os.mkdir("./logs")
+    if not os.path.isdir("./logs/" + subdir):
+        os.mkdir("./logs/" + subdir)
+    
+    filepath = "./logs/" + subdir + name + "-" + time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime()) + ".csv"
+    with open(filepath, "w+") as f:
+        writer = csv.DictWriter(f, fieldnames=collection[0].keys())
 
-		writer.writeheader()
-		for item in collection:	
-			writer.writerow(item)
-	print("Log saved at location :\n"+filepath+"\n")
+        writer.writeheader()
+        for item in collection:
+            writer.writerow(item)
+        
+        f.flush()  # Vider le buffer Python
+        os.fsync(f.fileno())  # Vider le buffer du système d'exploitation
+
+    print("Log saved at location :\n" + filepath + "\n")
+
 
 def display_aps(ap_list) :
 
