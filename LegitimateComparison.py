@@ -13,6 +13,7 @@ def get_legitimate( path ) :
 
 def gather_scans():
     log_data = []
+    saved = []
 
     log_name_list = os.listdir("./logs/av_APs/")
     for log in log_name_list :
@@ -22,7 +23,9 @@ def gather_scans():
         with open("./logs/av_APs/"+log , 'r') as f :
             reader = csv.DictReader(f , delimiter = ',')
             for row in reader :
-                log_data.append(row)
+                if row["address"] not in saved :
+                    log_data.append(row)
+                    saved.append(row["address"])
 
     return(log_data)
 
@@ -59,3 +62,24 @@ def save_results( collection ) :
 	print("Results saved at location :\n"+filepath+"\n")
 
 
+def save_merged( collection ):
+    
+    name = input("\n Saisissez un nom/lieu :\n")
+
+    if not os.path.isdir("./merged") :
+	    os.mkdir("./merged")
+	
+    filepath = "./merged/"+name+"-"+time.strftime("%Y-%m-%d_%H-%M-%S" , time.localtime())+".csv" 
+    with open( filepath , "w+" ) as f:
+
+        keys = ["ssid" , "address" , "signal" , "quality" , "frequency" , "channel" , "vendor"]
+        writer = csv.writer( f )
+
+
+
+        writer.writerow(keys)
+
+        for item in collection:	
+            writer.writerow([ item[k] for k in keys ])
+
+    print("Merged scans saved at location :\n"+filepath+"\n")

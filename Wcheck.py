@@ -30,7 +30,7 @@ def main():
 
 	Evil_Twin_up = False
 	running = True
-	main_menu = ["EXIT" , "Create Evil Twin" , "Close Evil Twin" , "See Evil Twin's connections" , "List available Wi-Fi", "Process data", "Delete logs", "Delete results"]
+	main_menu = ["EXIT" , "Create Evil Twin" , "Close Evil Twin" , "See Evil Twin's connections" , "List available Wi-Fi", "Process data", "Delete logs", "Delete results","Merge logs"]
 	while running :
 		result = open_menu(main_menu,"Main Menu")
 		if result <= len(main_menu) :
@@ -114,6 +114,13 @@ def main():
 							print("Deletion cancelled.")
 					else :
 						print("There is currently no results to delete.")
+				case 8 :
 
+					if os.path.isdir("./logs/av_APs/") :
+						
+						save_merged(gather_scans())
+
+					else :
+						print("No scans to merge.")
 if __name__ == "__main__" :
 	main()
