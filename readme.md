@@ -80,7 +80,10 @@ This one deletes the ./logs folder in the working directory.
 
 Deletes the ./results folder in the working directory.
 
+### 8 - Merge scans 
 
+Merges all csv scans stored in ./logs/av_APs/
+into one csv file under ./merged/
 
 
 /!\ This is a small newbie script, dont judge it too harshly.
