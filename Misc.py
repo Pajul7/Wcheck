@@ -80,11 +80,11 @@ def log_this_csv(collection, subdir=""):
 def display_aps(ap_list) :
 
 	print("Access points :\n")
-	print("{:16}	{:16}	{:10}	{:10}	{:10}	{:10}	{:10}".format("SSID","MAC","signal","quality","frequency","channel","vendor"))
+	print("{:16}	{:16}	{:10}	{:10}	{:16}	{:10}	{:10}	{:10}".format("SSID","MAC","signal","quality","frequency","encryption","channel","vendor"))
 	for n in ap_list :
 
 		if n["ssid"] != None :
 
-			print("{:16}	{:16}	{:10}	{:10}	{:10}	{:10}	{:10}".format( n["ssid"] , n["address"] , n["signal"] , n["quality"], n["frequency"], n["channel"] , n["vendor"]))
+			print("{:16}	{:16}	{:10}	{:10}	{:16}	{:10}	{:10}	{:10}".format( n["ssid"] , n["address"] , n["signal"] , n["quality"], n["frequency"], n["encryption"] , n["channel"] , n["vendor"]))
 	
 	print("\n")

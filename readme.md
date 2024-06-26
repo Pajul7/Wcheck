@@ -55,7 +55,7 @@ You can log the results in a json file, in the logs directory, included with the
 ### 4 - List available Wi-Fi
 
 This one is pretty self-explanatory.
-Will print out SSID, MAC address, signal, quality.
+Will print out SSID, MAC address, signal, quality, frequency, encryption, channel and network device constructor.
 You can log the results in a json file, in the logs directory, included with the script.
 
 If you want to run it from outside the script directory, uncomment the line and enter the script directory's path.

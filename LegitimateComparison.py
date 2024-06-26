@@ -72,10 +72,8 @@ def save_merged( collection ):
     filepath = "./merged/"+name+"-"+time.strftime("%Y-%m-%d_%H-%M-%S" , time.localtime())+".csv" 
     with open( filepath , "w+" ) as f:
 
-        keys = ["ssid" , "address" , "signal" , "quality" , "frequency" , "channel" , "vendor"]
+        keys = ["ssid" , "address" , "signal" , "quality" , "frequency" , "encryption" , "channel" , "vendor"]
         writer = csv.writer( f )
-
-
 
         writer.writerow(keys)
 

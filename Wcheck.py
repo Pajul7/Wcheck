@@ -12,9 +12,18 @@ os.chdir("/home/pajul/Documents/work/Wcheck/")
 
 def list_available_ap(MACDB , interface):
 	print("\n")
-	networks = [{"ssid":n.ssid,"address":n.address,"signal":n.signal,"quality":n.quality, "frequency":n.frequency ,"channel":n.channel, "vendor":MAC_to_vendor(n.address.upper() , MACDB )} for n in list(Cell.all(interface))]
-
-	print(networks)
+	networks = [
+        {
+            "ssid":n.ssid,
+            "address":n.address,
+            "signal":n.signal,
+            "quality":n.quality,
+            "frequency":n.frequency,
+            "encryption": n.encryption_type if n.encrypted else "-- NONE --" ,
+            "channel":n.channel,
+            "vendor":MAC_to_vendor(n.address.upper() , MACDB )
+        } for n in list(Cell.all(interface))
+    ]
 
 	display_aps(networks)
 
