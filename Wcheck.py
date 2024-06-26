@@ -7,7 +7,7 @@ from Eviltwin import *
 from LegitimateComparison import *
 
 # Uncomment this to run it from outside of the script's directory.
-os.chdir("/home/pajul/Documents/work/Wcheck/")
+#os.chdir("abs/path/to/Wcheck/directory")
 
 
 def list_available_ap(MACDB , interface):
