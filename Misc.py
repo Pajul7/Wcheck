@@ -3,6 +3,9 @@ import csv
 import os
 import time
 from pyroute2 import IPRoute, IW
+from wifi import Cell, Scheme
+
+
 
 def is_wireless(interface):
     ipr = IPRoute()
