@@ -18,7 +18,7 @@ malicious access points with SSIDs they already know.
 
 Help message : 
 
-'''
+```
 usage: Wcheck.py [-h] [-S <ifname>] [-s <save_name>] [-m <merge_name>] [-c <comparison_name>] [-d] [-y] [-et-aup <ifname>] [-et-mup <ifname> <SSID>] [-et-scan <ifname>] [-et-down]
 
 Scans wireless access points.
@@ -43,7 +43,7 @@ options:
                         List all devices connected to our access point. -s possible.
   -et-down, --evilTwin-down
                         Disable the access point and deletes the connection.
-'''
+```
 
 Note that you cannot have multiple hotspots at a time.
 
