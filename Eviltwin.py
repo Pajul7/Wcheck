@@ -5,12 +5,19 @@ import nmcli
 import subprocess
 from time import sleep
 
-def print_connected_devices(net_ip:str , MACDB, interface):
+def print_connected_devices(net_ip:str , MACDB:dict, interface:str):
+    '''
+    Takes a CIDR network ip and, the MAC/vendor dict and an interface name,
+    returns the devices connected to the local access point on this interface.
+
+    Performs an ARP flood to scan all the network.
+    '''
+    
     print("clearing ARP cache...")
     os.system("ip neigh flush all")
 
     target = get_netaddr(net_ip,"24")
-    ans, unans = srp(Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst=target) , timeout = 3 , iface = interface , inter = 0.05)
+    ans, unans = srp(Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst=target) , timeout = 3 , iface = interface , inter = 0.1)
 
     print("\n")
 
@@ -25,12 +32,20 @@ def print_connected_devices(net_ip:str , MACDB, interface):
     return clients
 
 def restart_network_manager():
+    '''
+    Restarts NetworkManager.service.
+    Equivalent to
+    > sudo systemctl restart NetworkManager
+    '''
     print("Restarting NetworkManager service...")
     subprocess.run(["sudo", "systemctl", "restart", "NetworkManager"])
     print("Waiting 10s for it to wake up...")
     sleep(10)
 
 def is_hotspot_on():
+    '''
+    Returns True if the Wcheck connection is detected in NetworkManager.
+    '''
     try :
         nmcli.connection.show('WCHECK-CONNECTION')
     except nmcli.NotExistException :
@@ -40,6 +55,10 @@ def is_hotspot_on():
 
 
 def start_hotspot(SSID:str , interface:str , con_name="WCHECK-CONNECTION", band="bg"):
+    '''
+    Takes an SSID and an interface name, and hosts an open access point with given parameters.
+    Can fail if interface/NetworkManager has a problem
+    '''
     print("Starting hotspot...")
 
     if is_hotspot_on():
@@ -57,7 +76,6 @@ def start_hotspot(SSID:str , interface:str , con_name="WCHECK-CONNECTION", band=
             text=True
         )
 
-        print("DEBUG : ",results.stderr)
         if results.stderr != "" :
             if not retried :
                 print("NetworkManager seems to fail. Restarting NetworkManager Service...")
@@ -77,6 +95,9 @@ def start_hotspot(SSID:str , interface:str , con_name="WCHECK-CONNECTION", band=
     print("Hotspot on.")
 
 def stop_hotspot(con_name="WCHECK-CONNECTION"):
+    '''
+    Downs the hotspot and deletes the connection.
+    '''
     print("Stopping hotspot...")
 
     try:
@@ -92,4 +113,4 @@ def stop_hotspot(con_name="WCHECK-CONNECTION"):
         print("Connection deleted.")
 
     else :
-        print("hotspot is already down.")
+        print("hotspot is already deleted.")

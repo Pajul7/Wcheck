@@ -1,5 +1,7 @@
 import argparse
 from Misc import *
+from fileSearch import *
+from Eviltwin  import *
 from LegitimateComparison import *
 import os.path
 import shutil
@@ -17,8 +19,11 @@ class OrderElementsAction(argparse.Action):
 parser = argparse.ArgumentParser(description='Scans wireless access points.')
 parser.add_argument('-S','--scan', help='Scan access point devices. -s possible', metavar='<ifname>', action=OrderElementsAction)
 parser.add_argument('-s','--save', help='Save results in a csv file. Argument is a name, file name will be in format : <save_name>-<date>-<hour>.csv.', action='append', metavar='<save_name>')
+parser.add_argument('-p','--process', help='Processes every scan file in a "scan map", in which you can search through.',action=OrderElementsAction,metavar='<map_name>')
 parser.add_argument('-m','--merge', help='Merge results in a unique csv file. Needs a name to be specified.', metavar='<merge_name>', action=OrderElementsAction)
 parser.add_argument('-c','--compare', help='Compare all scans currently in the logs directory with the given reference. Need reference file path as parameter. -s possible.', metavar='<comparison_name>', action=OrderElementsAction)
+parser.add_argument('-wm','--where-mac', help='Look for a MAC address in the specified map', action=OrderElementsAction , nargs=2, metavar=('<MAC>','<scan_map_path>'))
+parser.add_argument('-ws','--where-ssid', help='Look for a SSID in the specified map', action=OrderElementsAction , nargs=2, metavar=('<SSID>','<scan_map_path>'))
 parser.add_argument('-d','--delete-logs', help='Delete all scan logs.', action=OrderElementsAction , nargs=0)
 parser.add_argument('-y','--yes', help='Skips confirmations.' , action='store_true')
 
@@ -39,6 +44,10 @@ if all( arg_dict[arg] == False or arg_dict[arg] == None for arg in arg_dict if a
 
 
 def next_arg_instance( arg_list , arg_name ) :
+    '''
+    Search for the next content of the given argument name, and returns it if there is one.
+    if none , returns None.
+    '''
     if arg_list == None or arg_counts[arg_name] > len(arg_list) - 1 :
         return None
         
@@ -50,9 +59,15 @@ def next_arg_instance( arg_list , arg_name ) :
         return res
 
 def get_save_name():
+    '''
+    Get next specified save name in the given call arguments
+    '''
     return next_arg_instance(args.save , 's')
 
 def delete_logs() :
+    '''
+    Deletes ./logs/scans Directory.
+    '''
     sure = args.yes
 
     if not os.path.exists('./logs/scans/'):
@@ -71,6 +86,9 @@ def delete_logs() :
             print("Deletion aborted.")
 
 def scan(ifname , macdb) :
+    '''
+    Shortcut for performing a scan and saving it if specified.
+    '''
     networks = list_available_ap(macdb , ifname)
     
 
@@ -80,6 +98,9 @@ def scan(ifname , macdb) :
         log_this_csv( networks , subdir="scans/" , name = save_name )
 
 def merge(merge_name) :
+    '''
+    Shortcut for performing a merge.
+    '''
     save_merged(gather_scans() , merge_name)
     
 def compare(reference_file_path):
@@ -100,11 +121,15 @@ def compare(reference_file_path):
             save_results( r , save_name ) 
 
 def evilTwin_down() :
+    '''
+    Shortcut for stopping hotspot
+    '''
     stop_hotspot()
 
-def evilTwin_auto_up() :
-
-    interface = args.evilTwin_auto_up
+def evilTwin_auto_up(MACDB , interface) :
+    '''
+    Shortcut for turning on the hotspot with a mimic selection.
+    '''
 
     print("Select an access point to mimic SSID.")
     target_list = list_available_ap( MACDB , interface )
@@ -118,22 +143,52 @@ def evilTwin_auto_up() :
         print("Incorrect target number.")
         exit()
 
-def evilTwin_manual_up(ifname , ssid) :
-
+def evilTwin_manual_up(ifname , ssid ) :
+    '''
+    Shortcut for turning on the hotspot with specified SSID.
+    '''
     stop_hotspot()
     start_hotspot( ssid , interface=ifname)
 
-def evilTwin_scan(ifname) :
+def evilTwin_scan(ifname , MAC_DB) :
 
     print("\nscanning devices on : " ,  get_netaddr( get_if_addr(ifname) , "24"))
 
-    clients = print_connected_devices(get_netaddr(get_if_addr(ifname) , "24"), MACDB , ifname )
+    clients = print_connected_devices(get_netaddr(get_if_addr(ifname) , "24"), MAC_DB , ifname )
 
 
     save_name = get_save_name()
     if save_name :
         log_this_csv(clients,subdir="et_clients/", name=save_name )
 
+def where_mac(MAC:str , path:str):
+    '''
+    Shortcut for searching a MAC address in the specified scan map filepath
+    '''
+    data={}
+
+    with open(path, 'r') as f :
+        data = json.load(f)
+
+    search_by_MAC(MAC , data)
+
+def where_ssid(SSID:str , path:str):
+    '''
+    Shortcut for searching an SSID in the specified scan map filepath
+    '''
+
+    data={}
+
+    with open(path, 'r') as f :
+        data = json.load(f)
+
+    search_by_SSID(SSID , data)
+
+def process(name:str) :
+    '''
+    Shortcut to process scans.
+    '''
+    process_scans(name)
 
 def main():
 
@@ -151,9 +206,19 @@ def main():
             case 'merge' :
                 merge( merge_name = arg[1] )
 
+            case 'process' : 
+                process( name = arg[1] )
+
             case 'compare' : 
                 compare( reference_file_path = arg[1] )
             
+            case 'where_mac' :
+                where_mac( MAC=arg[1][0] , path=arg[1][1] )
+
+            case 'where_ssid' :
+                print(arg)
+                where_ssid( SSID=arg[1][0] , path=arg[1][1] )
+
             case 'delete_logs' :
                 delete_logs()
             
@@ -161,13 +226,13 @@ def main():
                 evilTwin_down()
             
             case 'evilTwin_auto_up':
-                evilTwin_auto_up()
+                evilTwin_auto_up(MACDB, interface=arg[1])
             
             case 'evilTwin_manual_up':
-                evilTwin_manual_up( ifname = arg[1] , ssid = arg[2] )
+                evilTwin_manual_up( ifname = arg[1][0] , ssid = arg[1][1] )
             
             case 'evilTwin_scan':
-                evilTwin_scan( ifname = arg[1] )
+                evilTwin_scan( ifname = arg[1] , MAC_DB=MACDB)
 
 if __name__ == "__main__" :
     main()

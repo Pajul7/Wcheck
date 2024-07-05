@@ -2,7 +2,13 @@ import csv
 import os 
 import time
 
+from Misc import *
+
 def get_legitimate( path ) :
+    '''
+    Imports a file with access points to compare with scans.
+    File must be a csv file with at least a "MAC" and "SSID" columns
+    '''
     legitimate = {}
 
     with open(path , 'r') as f :
@@ -11,39 +17,35 @@ def get_legitimate( path ) :
             legitimate[row["MAC"]] = row["SSID"]
     return legitimate
 
-def gather_scans():
-    log_data = []
 
-    log_name_list = os.listdir("./logs/scans/")
-    for log in log_name_list :
-
-        print("Gathering "+log+" ...")
-
-        with open("./logs/scans/"+log , 'r') as f :
-            reader = csv.DictReader(f , delimiter = ',')
-
-            for row in reader :
-                log_data.append((row , log))
-
-    return(log_data)
-
-def ap_delta( scans , legitimate ) :
+def ap_delta( scans:list , legitimate:list ) :
+    '''
+    Takes a list of scans and a list of legitimate access points
+    and return the difference : 
+    MAC addresses in scans that are not in reference files
+    Aps with good MAC addresses but wrong SSIDs.
+    '''
     delta = []
     looked_addresses = []
 
     for ap in scans :
-        if ap["address"] not in looked_addresses:
-            if ap["address"] not in legitimate :
-                delta.append(ap)
+        print(ap)
+        if ap[0]["address"] not in looked_addresses:
+            if ap[0]["address"] not in legitimate :
+                delta.append(ap[0])
             
-            elif ap["ssid"] != legitimate[ ap["address"] ]:
-                delta.append(ap)
+            elif ap["ssid"] != legitimate[ ap[0]["address"] ]:
+                delta.append(ap[0])
             
-            looked_addresses.append(ap["address"])
+            looked_addresses.append(ap[0]["address"])
 
     return(delta)
 
-def save_results( collection , name = "") :
+def save_results( collection:list , name = "") :
+    '''
+    Exports an AP collection, result of a comparison in a single csv file under ./results.
+    Takes an AP list and a file name.
+    '''
     if name == "" :
         name = input("\n Saisissez un nom/lieu :\n")
 
@@ -62,7 +64,11 @@ def save_results( collection , name = "") :
 
 
 def save_merged( collection , name=''):
-    
+    '''
+    Takes an AP list and a name,
+    and save all APs in a single file, adding the "scan" column,
+    which contains the file they are from.
+    '''
     if name == '' :
         name = input("\n Saisissez un nom/lieu :\n")
 
@@ -82,5 +88,4 @@ def save_merged( collection , name=''):
             item["scan"] = scan
 
             writer.writerow([ item[k] for k in keys ])
-
     print("Merged scans saved at location :\n"+filepath+"\n")

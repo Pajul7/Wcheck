@@ -1,13 +1,19 @@
+""" Misc Module
+Contains Various function that does not really fit elsewhere, or that are used in different places.
+"""
+
 import json
 import csv
 import os
 import time
 from pyroute2 import IPRoute, IW
 from wifi import Cell, Scheme
+import ipaddress
 
-
-
-def is_wireless(interface):
+def is_wireless(interface:str):
+    '''
+    Takes a name and returns True if it is a valid wireless interface name.
+    '''
     ipr = IPRoute()
     iw = IW()
     try:
@@ -22,12 +28,19 @@ def is_wireless(interface):
     return False
 
 def init_MAC_DB():
+    '''
+    Imports the MAC address file and return a dictionnary, to search for vendors from MAC address later.
+    '''
     res = {}
     with open("fMAC_DB.json") as f :
         res = json.load(f)
     return res
 
 def MAC_to_vendor(MAC_prefix:str , MAC_DB:dict) :
+    '''
+    Takes a MAC address and a MAC/vendor dict.
+    MAC addresses/prefixes must be keys and vendors, values.
+    '''
     if len(MAC_prefix) < 8 :
         return "Unknown"
 
@@ -39,12 +52,19 @@ def MAC_to_vendor(MAC_prefix:str , MAC_DB:dict) :
         else :
             return MAC_to_vendor(MAC_prefix[:-1] , MAC_DB)
 
-def get_netaddr(target , subnet):
-    splittarget = target.split(".")
-    ip = splittarget[0] + "." + splittarget[1] + "." + splittarget[2] + "." + "0/"+subnet
-    return ip
+def get_netaddr(target:str , subnet:str):
+    '''
+    Takes an host ip address and a subnet mask number (CIDR notation), and returns the network address
+    '''
+    cidr_notation = target+'/'+subnet
+    network = ipaddress.ip_network(cidr_notation, strict=False)
+    return str(network.network_address)
 
 def open_menu(options:list , title="Menu" ):
+    '''
+    Takes a list of options and a title, display a menu with given choices.
+    Returns the choosen option's index.
+    '''
     print(title)
 
     i = 0
@@ -61,7 +81,12 @@ def open_menu(options:list , title="Menu" ):
             print("\nIncorrect option given. Try again.\n")
     return choice
 
-def list_available_ap(MACDB , interface):
+def list_available_ap(MACDB:dict , interface:str):
+    '''
+    Takes the MAC/vendor dict and an interface, gather the access points
+    detected by the interface, displays and returns them.
+    /!\\ if your interface is already connected to an access point, you will only see this ap.
+    '''
     print("\n")
     networks = [
         {
@@ -80,20 +105,29 @@ def list_available_ap(MACDB , interface):
 
     return networks
 
-def log_this_json(collection , subdir = "") :
-    name = input("\n Saisissez un nom/lieu :\n")
-    if not os.path.isdir("./logs") :
-        os.mkdir("./logs")
-    if not os.path.isdir("./logs/"+subdir) :
-        os.mkdir("./logs/"+subdir)
-    filepath = "./logs/"+subdir+name+"-"+time.strftime("%Y-%m-%d_%H-%M-%S" , time.localtime())+".json" 
-    with open( filepath , "w+" ) as f:
-        json.dump(collection, f)
-    print("Log saved at location :\n"+filepath+"\n")
+def gather_scans():
+    '''
+    Gather all scans in ./logs/scans and returns a list of tuple ( ap_dict , scan_name )
+    '''
 
+    log_data = []
 
-def log_this_csv(collection, subdir="", name=''):
+    log_name_list = os.listdir("./logs/scans/")
+    for log in log_name_list :
 
+        print("Gathering "+log+" ...")
+
+        with open("./logs/scans/"+log , 'r') as f :
+            reader = csv.DictReader(f , delimiter = ',')
+
+            for row in reader :
+                log_data.append((row , log))
+    return(log_data)
+
+def log_this_csv(collection:list, subdir="", name=''):
+    '''
+    Takes a list of access points and stores it in a csv file.
+    '''
     if name == '' :
         name = input("\n Saisissez un nom/lieu :\n")
     
@@ -115,9 +149,41 @@ def log_this_csv(collection, subdir="", name=''):
 
     print("Log saved at location :\n" + filepath + "\n")
 
+def process_scans(name:str):
+    '''
+    Gets all the scan logs in /logs/scans and saves them in a json file which
+    allows fast searches.
+    '''
+    
+    result = {}
 
-def display_aps(ap_list) :
+    if not os.path.isdir("./logs"):
+        os.mkdir("./logs")
+    if not os.path.isdir("./logs/maps"):
+        os.mkdir("./logs/maps")
 
+    scans = gather_scans()
+
+
+    for scan in scans : 
+        if scan[1] not in result :
+            result[scan[1]] = {}
+
+        result[scan[1]][scan[0]['address']] = scan[0]
+    
+    filepath = "./logs/maps/" + name + "-" + time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime()) + ".json"
+
+    with open(filepath , '+w') as f :
+        json.dump(result , f)
+    print("Scan Map saved at location : " + filepath)
+
+
+
+def display_aps(ap_list:list) :
+    '''
+    Takes a list of access point dicts, and displays them nicely with
+    SSID,MAC address,signal,quality,frequency,encryption,channel and vendor.
+    '''
     print("Access points :\n")
     print("   {:16}    {:16}   {:10}   {:10}   {:16}   {:10}   {:10}   {:10}"
         .format(

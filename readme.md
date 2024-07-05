@@ -18,8 +18,9 @@ malicious access points with SSIDs they already know.
 
 Help message : 
 
-'''
-usage: Wcheck.py [-h] [-S <ifname>] [-s <save_name>] [-m <merge_name>] [-c <comparison_name>] [-d] [-y] [-et-aup <ifname>] [-et-mup <ifname> <SSID>] [-et-scan <ifname>] [-et-down]
+```
+usage: Wcheck.py [-h] [-S <ifname>] [-s <save_name>] [-p <map_name>] [-m <merge_name>] [-c <comparison_name>] [-wm <MAC> <scan_map_path>] [-ws <SSID> <scan_map_path>] [-d] [-y]
+                 [-et-aup <ifname>] [-et-mup <ifname> <SSID>] [-et-scan <ifname>] [-et-down]
 
 Scans wireless access points.
 
@@ -29,10 +30,16 @@ options:
                         Scan access point devices. -s possible
   -s <save_name>, --save <save_name>
                         Save results in a csv file. Argument is a name, file name will be in format : <save_name>-<date>-<hour>.csv.
+  -p <map_name>, --process <map_name>
+                        Processes every scan file in a "scan map", in which you can search through.
   -m <merge_name>, --merge <merge_name>
                         Merge results in a unique csv file. Needs a name to be specified.
   -c <comparison_name>, --compare <comparison_name>
                         Compare all scans currently in the logs directory with the given reference. Need reference file path as parameter. -s possible.
+  -wm <MAC> <scan_map_path>, --where-mac <MAC> <scan_map_path>
+                        Look for a MAC address in the specified map
+  -ws <SSID> <scan_map_path>, --where-ssid <SSID> <scan_map_path>
+                        Look for a SSID in the specified map
   -d, --delete-logs     Delete all scan logs.
   -y, --yes             Skips confirmations.
   -et-aup <ifname>, --evilTwin-auto-up <ifname>
@@ -43,7 +50,9 @@ options:
                         List all devices connected to our access point. -s possible.
   -et-down, --evilTwin-down
                         Disable the access point and deletes the connection.
-'''
+```
+
+/!\\ -evilTwin-scan is still WIP and doesn't currently work.
 
 Note that you cannot have multiple hotspots at a time.
 
